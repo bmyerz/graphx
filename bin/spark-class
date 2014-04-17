@@ -133,7 +133,7 @@ if [ -e "$TOOLS_DIR"/target/spark-tools*[0-9Tg].jar ]; then
 fi
 
 # Compute classpath using external script
-CLASSPATH=`$FWDIR/bin/compute-classpath.sh`
+CLASSPATH=$GRAPHX_HOME/graphx/target/scala-2.10/classes:`$FWDIR/bin/compute-classpath.sh`
 if [[ "$1" =~ org.apache.spark.tools.* ]]; then
   CLASSPATH="$CLASSPATH:$SPARK_TOOLS_JAR"
 fi
@@ -144,6 +144,7 @@ if $cygwin; then
     export SPARK_TOOLS_JAR=`cygpath -w $SPARK_TOOLS_JAR`
   fi
 fi
+echo $CLASSPATH
 export CLASSPATH
 
 if [ "$SPARK_PRINT_LAUNCH_COMMAND" == "1" ]; then
