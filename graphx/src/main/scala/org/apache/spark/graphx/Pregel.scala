@@ -53,6 +53,13 @@ import scala.reflect.ClassTag
  *
  */
 object Pregel {
+  def timeStart() : Double = {
+    return System.nanoTime();
+  }
+  def timeEnd(start:Double) : Double = {
+    val end = System.nanoTime();
+    return (end-start)/10e9
+  }
 
   /**
    * Execute a Pregel-like iterative vertex-parallel abstraction.  The
@@ -126,6 +133,7 @@ object Pregel {
     var prevG: Graph[VD, ED] = null
     var i = 0
     while (activeMessages > 0 && i < maxIterations) {
+      val t = timeStart()
       // Receive the messages. Vertices that didn't get any messages do not appear in newVerts.
       val newVerts = g.vertices.innerJoin(messages)(vprog).cache()
       // Update the graph with the new vertices.
@@ -148,6 +156,11 @@ object Pregel {
       prevG.unpersistVertices(blocking=false)
       // count the iteration
       i += 1
+
+      new Object()
+
+      val itertime = timeEnd(t)
+      println("iteration " + i + ": " + itertime + " sec")
     }
 
     g

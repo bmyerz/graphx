@@ -25,6 +25,13 @@ import org.apache.spark.graphx.PartitionStrategy._
  * Driver program for running graph algorithms.
  */
 object Analytics extends Logging {
+  def timeStart() : Double = {
+    return System.nanoTime();
+  }
+  def timeEnd(start:Double) : Double = {
+    val end = System.nanoTime();
+    return (end-start)/10e9
+  }
 
   def main(args: Array[String]): Unit = {
     val host = args(0)
@@ -72,15 +79,28 @@ object Analytics extends Logging {
         println("======================================")
 
         val sc = new SparkContext(host, "PageRank(" + fname + ")", conf)
+        var t = timeStart()
+        val unpartitionedGraph =
+          GraphLoader.edgeListFile(sc, fname,
+            minEdgePartitions = numEPart).cache()
+        val loadtime = timeEnd(t)
 
-        val unpartitionedGraph = GraphLoader.edgeListFile(sc, fname,
-          minEdgePartitions = numEPart).cache()
-        val graph = partitionStrategy.foldLeft(unpartitionedGraph)(_.partitionBy(_))
+        t = timeStart()
+        val graph =
+          partitionStrategy.foldLeft(unpartitionedGraph)(_.partitionBy(_))
+
+        val partitiontime = timeEnd(t)
+        println("GRAPHX: Partition time " + partitiontime)
 
         println("GRAPHX: Number of vertices " + graph.vertices.count)
         println("GRAPHX: Number of edges " + graph.edges.count)
 
-        val pr = graph.pageRank(tol).vertices.cache()
+        t = timeStart()
+        val pr =
+          graph.pageRank(tol).vertices.cache()
+        val prtime = timeEnd(t)
+
+        println("GRAPHX: Pagerank total time " + prtime)
 
         println("GRAPHX: Total rank: " + pr.map(_._2).reduce(_ + _))
 
