@@ -82,7 +82,7 @@ object GraphLoader extends Logging {
     edges.count()
 
     logInfo("It took %d ms to load the edges".format(System.currentTimeMillis - startTime))
-    edgesC.coalesce(minEdgePartitions)
+    val edgesC = edges.coalesce(minEdgePartitions)
     GraphImpl.fromEdgePartitions(edgesC, defaultVertexAttr = 1)
   } // end of edgeListFile
 
